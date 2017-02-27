@@ -49,11 +49,10 @@
     downloadCsv()
   }
 
-  const downloadCsv = () => {
-    let csvContent = ''
-    let columnNames = []
-
-    results.forEach((rowObject, index) => {
+  let columnNames = []
+  
+  const determineColumnNames = () => {
+    results.forEach((rowObject) => {
       let columnsInRow = Object.keys(rowObject)
 
       columnsInRow.forEach((column) => {
@@ -61,15 +60,20 @@
           columnNames.push(column)
         }
       })
+    })
+  }
 
+  const downloadCsv = () => {
+    determineColumnNames()
+    
+    let csvContent = `data:text/csv;charset=utf-8,${columnNames.join(',')}\n`
+   
+    results.forEach((rowObject, index) => {
       let rowValues = []
 
       columnNames.forEach((column) => {
-        if (rowObject[column]) {
-          rowValues.push(rowObject[column])
-        } else {
-          rowValues.push('')
-        }
+        // so all values appear as quoted strings and commas in strings dont mess things up
+        rowValues.push(`\"${rowObject[column]}\"`)
       })
       
       if (index < results.length) {
@@ -79,7 +83,6 @@
       }
     })
     
-    csvContent = `data:text/csv;charset=utf-8,${columnNames.join(',')}\n${csvContent}`
 
     let encodedUri = encodeURI(csvContent)
     let link = document.createElement('a')
@@ -91,4 +94,3 @@
 
   makeRequests()
 })()
-
